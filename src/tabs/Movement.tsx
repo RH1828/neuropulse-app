@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { PROFILES, SAMPLE_SLEEP, type Exercise } from '../data'
-import { CONDITIONS, type Condition } from '../sim'
+import type { Condition } from '../sim'
 import { Card, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
 
 const today = new Date().toDateString()
@@ -15,7 +15,7 @@ export default function Movement({ condition }: { condition: Condition }) {
   return (
     <div className="space-y-5">
       <div>
-        <div className="label">Exercise & sleep · {CONDITIONS[condition].short}</div>
+        <div className="label">Exercise & sleep</div>
         <h1 className="mt-1 font-display text-[1.7rem] font-semibold">Therapy timed to your steadiest hours</h1>
       </div>
 
@@ -28,36 +28,25 @@ export default function Movement({ condition }: { condition: Condition }) {
           <div className="font-display text-2xl font-semibold text-ok">{p.windows.physical}</div>
           <div className="text-sm text-haze">{best.note}</div>
         </div>
-        <Ring pct={(done / p.exercises.length) * 100} size={64} stroke={7} color="#43e08f">
-          <span className="text-sm font-semibold">{done}/{p.exercises.length}</span>
-        </Ring>
       </div>
 
-      {/* Exercises + timer */}
-      <Card title="Guided exercises">
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-          <div className="space-y-2">
-            {p.exercises.map((e) => (
-              <button
-                key={e.id}
-                onClick={() => setActive(e)}
-                aria-pressed={active.id === e.id}
-                className={`flex w-full items-center gap-4 rounded-xl border px-4 py-3.5 text-left transition ${active.id === e.id ? 'border-teal bg-teal/10' : 'border-line hover:border-mist/60'}`}
-              >
-                <span
-                  className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-semibold ${doneEx[e.id] ? 'bg-ok text-ink' : 'bg-raised text-teal'}`}
-                >
-                  {doneEx[e.id] ? '✓' : fmt(e.seconds)}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{e.name}</span>
-                  <span className="block text-sm text-mist">{e.goal}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-          <Timer key={active.id} exercise={active} onDone={() => setDoneEx({ ...doneEx, [active.id]: true })} />
+      {/* Exercises + timer (compact) */}
+      <Card title="Guided exercises" action={<span className="text-sm text-mist">LSVT BIG-style · {done}/{p.exercises.length} done</span>}>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Choose an exercise">
+          {p.exercises.map((e) => (
+            <button
+              key={e.id}
+              onClick={() => setActive(e)}
+              aria-pressed={active.id === e.id}
+              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${active.id === e.id ? 'border-teal bg-teal/10 text-teal' : 'border-line text-haze hover:border-mist/60'}`}
+            >
+              {doneEx[e.id] && <span className="text-ok">✓</span>}
+              {e.name}
+              <span className="text-mist">{fmt(e.seconds)}</span>
+            </button>
+          ))}
         </div>
+        <Timer key={active.id} exercise={active} onDone={() => setDoneEx({ ...doneEx, [active.id]: true })} />
       </Card>
 
       <Sleep />
@@ -92,37 +81,23 @@ function Timer({ exercise, onDone }: { exercise: Exercise; onDone: () => void })
   const finished = left === 0
 
   return (
-    <div className="flex flex-col items-center rounded-2xl bg-raised p-5 text-center sm:p-6">
-      <div className="font-display text-xl font-semibold">{exercise.name}</div>
-      <div className="text-sm text-mist">{exercise.goal}</div>
-      <div className="my-5">
-        <Ring pct={(left / exercise.seconds) * 100} size={180} stroke={14} color={finished ? '#43e08f' : '#2ee6d0'}>
-          <div>
-            <div className="font-display text-5xl font-semibold tabular">{fmt(left)}</div>
-            <div className="text-sm text-mist">{finished ? 'Done!' : running ? 'Keep going' : 'Ready'}</div>
-          </div>
-        </Ring>
+    <div className="mt-4 flex flex-wrap items-center gap-5 rounded-2xl bg-raised p-4 sm:p-5">
+      <Ring pct={(left / exercise.seconds) * 100} size={104} stroke={9} color={finished ? '#43e08f' : '#2ee6d0'}>
+        <div className="font-display text-2xl font-semibold tabular">{fmt(left)}</div>
+      </Ring>
+      <div className="min-w-0 flex-1 basis-56">
+        <div className="text-sm text-mist">{finished ? 'Done! Great work.' : `Step ${cue + 1} of ${exercise.cues.length} · ${exercise.goal}`}</div>
+        <div className="mt-1 text-lg font-medium">{finished ? exercise.name : exercise.cues[cue]}</div>
       </div>
-      <ol className="w-full space-y-2 text-left">
-        {exercise.cues.map((c, i) => (
-          <li
-            key={i}
-            className={`flex gap-3 rounded-lg px-3 py-2 transition ${(running || elapsed > 0) && i === cue && !finished ? 'bg-teal/15 text-white' : 'text-haze'}`}
-          >
-            <span className="font-semibold text-teal">{i + 1}</span>
-            {c}
-          </li>
-        ))}
-      </ol>
-      <div className="mt-5 flex w-full gap-3">
+      <div className="flex gap-2">
         {finished ? (
-          <button onClick={() => setLeft(exercise.seconds)} className="flex-1 rounded-xl bg-teal px-4 py-3.5 text-lg font-semibold text-ink">
-            Do it again
+          <button onClick={() => setLeft(exercise.seconds)} className="rounded-xl bg-teal px-5 py-3 font-semibold text-ink">
+            Again
           </button>
         ) : (
           <button
             onClick={() => setRunning((r) => !r)}
-            className={`flex-1 rounded-xl px-4 py-3.5 text-lg font-semibold ${running ? 'bg-warn text-ink' : 'bg-teal text-ink'}`}
+            className={`w-28 rounded-xl px-5 py-3 font-semibold ${running ? 'bg-warn text-ink' : 'bg-teal text-ink'}`}
           >
             {running ? 'Pause' : elapsed > 0 ? 'Resume' : 'Start'}
           </button>
@@ -132,7 +107,7 @@ function Timer({ exercise, onDone }: { exercise: Exercise; onDone: () => void })
             setRunning(false)
             setLeft(exercise.seconds)
           }}
-          className="rounded-xl border border-line px-5 py-3.5 text-haze hover:text-white"
+          className="rounded-xl border border-line px-4 py-3 text-haze hover:text-white"
         >
           Reset
         </button>

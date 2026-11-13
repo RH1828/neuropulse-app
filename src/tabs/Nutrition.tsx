@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { NUTRIENT_INFO, PROFILES, type Aisle, type Meal } from '../data'
-import { CONDITIONS, type Condition } from '../sim'
+import type { Condition } from '../sim'
 import { CheckRow, Drawer, Pill, Ring, usePersist } from '../ui'
 
 export default function Nutrition({ condition }: { condition: Condition }) {
@@ -12,7 +12,7 @@ export default function Nutrition({ condition }: { condition: Condition }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <div className="label">Brain-health meal plan · {CONDITIONS[condition].short}</div>
+          <div className="label">Brain-health meal plan</div>
           <h1 className="mt-1 font-display text-[1.7rem] font-semibold">{p.dietName}</h1>
         </div>
         <button onClick={() => setDrawer(true)} className="rounded-xl bg-teal px-5 py-3 font-semibold text-ink hover:brightness-110">
@@ -20,16 +20,10 @@ export default function Nutrition({ condition }: { condition: Condition }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-teal/25 bg-teal/5 p-5">
-          <div className="label text-teal">Why it matters</div>
-          <p className="mt-1.5 text-haze">{p.dietTip}</p>
-        </div>
-        <div className="rounded-2xl border border-line bg-panel/90 p-5">
-          <div className="label">Key nutrient</div>
-          <div className="mt-1 font-display text-xl font-semibold text-teal">{p.keyNutrient}</div>
-          <p className="mt-1 text-haze">{NUTRIENT_INFO[p.keyNutrient]}</p>
-        </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-line bg-panel/90 px-5 py-4">
+        <span className="label">Key nutrient</span>
+        <span className="font-display text-lg font-semibold text-teal">{p.keyNutrient}</span>
+        <span className="min-w-0 text-haze">{NUTRIENT_INFO[p.keyNutrient]}</span>
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-3 md:grid-cols-2">

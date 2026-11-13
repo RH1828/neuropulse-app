@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { CONDITIONS, type Condition, type Phase } from './sim'
+import type { Condition, Phase } from './sim'
 import { PROFILES } from './data'
 
-export type Tab = 'home' | 'food' | 'move' | 'day'
+export type Tab = 'home' | 'food' | 'move'
 
 interface Step {
   tab: Tab
@@ -11,37 +11,27 @@ interface Step {
   text: (c: Condition) => string
 }
 
-const SPIKE_NAME: Record<Condition, string> = {
-  pd: 'a beta-wave burst (tremor)',
-  epilepsy: 'a seizure spike',
-  stroke: 'a slow-wave dip (weakness)',
-}
-
 export const STEPS: Step[] = [
   {
     tab: 'home',
-    seconds: 22,
-    title: 'Senses and treats on its own',
-    text: (c) =>
-      `NeuroPulse reads brain signals 24/7. Watch ${SPIKE_NAME[c]} appear. The AI detects it and sends a pulse plus a nanoliter dose of ${CONDITIONS[c].intervention.drug}, stabilizing the signal in seconds.`,
+    seconds: 26,
+    title: 'Senses and treats tremor on its own',
+    text: () =>
+      'NeuroPulse reads beta waves in the subthalamic nucleus 24/7. Watch a tremor spike appear: the AI detects it, sends a gentle pulse and a 40-nanoliter dose of GDNF plus dopamine agonist, and the signal settles in seconds.',
   },
   {
     tab: 'food',
-    seconds: 12,
-    title: 'Nutrition built for the brain',
-    text: (c) => `Every tab adapts to the condition. For ${CONDITIONS[c].short}: ${PROFILES[c].dietName.toLowerCase()}, rich in ${PROFILES[c].keyNutrient}, with a one-tap grocery list.`,
+    seconds: 16,
+    title: 'Meals that work with the medicine',
+    text: () =>
+      'Meals are timed around levodopa: light protein by day, protein at dinner, and foods rich in tyrosine and omega-3s. One tap builds the weekly grocery list.',
   },
   {
     tab: 'move',
-    seconds: 12,
-    title: 'Exercise at the right time',
-    text: (c) => `NeuroPulse finds the steadiest hours (${PROFILES[c].windows.physical}) for guided therapy exercises, and links sleep to brain stability.`,
-  },
-  {
-    tab: 'day',
-    seconds: 14,
-    title: 'Brain data becomes a daily plan',
-    text: () => 'Brain data becomes the best times for daily tasks, a quick check-in tracks quality of life, and one tap alerts the neurologist.',
+    seconds: 18,
+    title: 'Exercise when the brain is steadiest',
+    text: (c) =>
+      `NeuroPulse finds the steadiest hours (${PROFILES[c].windows.physical}) for guided LSVT BIG-style exercises, and shows how better sleep means more stable brain signals.`,
   },
 ]
 export const TOUR_SECONDS = STEPS.reduce((s, x) => s + x.seconds, 0)
@@ -148,7 +138,7 @@ export default function Tour({
             </div>
             <div className="mt-0.5 font-display text-lg font-semibold sm:text-xl">{finished ? 'Thank you' : s.title}</div>
             <p className="mt-0.5 text-sm text-haze sm:text-[0.98rem]">
-              {finished ? 'NeuroPulse: closed-loop brain care that also helps patients eat, move and plan their day.' : s.text(condition)}
+              {finished ? 'NeuroPulse: closed-loop brain care that also guides how people with Parkinson’s eat, move and sleep.' : s.text(condition)}
             </p>
           </div>
           <div className="flex items-center gap-2">

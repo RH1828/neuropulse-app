@@ -2,19 +2,16 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import AlertModal from './components/AlertModal'
 import { useSimulation } from './useSimulation'
 import { CONDITIONS, INITIAL_RESERVOIRS, type Condition } from './sim'
-import { usePersist } from './ui'
 import { CLINICIAN } from './data'
 import CommandCenter from './tabs/CommandCenter'
 import Nutrition from './tabs/Nutrition'
 import Movement from './tabs/Movement'
-import Daily from './tabs/Daily'
 import Tour, { TOUR_SECONDS, type Tab } from './Tour'
 
 const TABS: { id: Tab; label: string; long: string; icon: ReactNode }[] = [
   { id: 'home', label: 'Brain', long: 'Brain & Implant', icon: <IconPulse /> },
   { id: 'food', label: 'Meals', long: 'Meals & Nutrition', icon: <IconBowl /> },
   { id: 'move', label: 'Move', long: 'Exercise & Sleep', icon: <IconMove /> },
-  { id: 'day', label: 'My Day', long: 'My Day', icon: <IconCheck /> },
 ]
 
 const tabFromHash = (): Tab => {
@@ -24,8 +21,8 @@ const tabFromHash = (): Tab => {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>(tabFromHash)
-  const [condition, setCondition] = usePersist<Condition>('np.cond', 'pd')
-  const [autonomy, setAutonomy] = useState(true)
+  const condition: Condition = 'pd' // this demo follows one Parkinson's patient
+  const info = CONDITIONS[condition]
   const [reservoirs, setReservoirs] = useState(INITIAL_RESERVOIRS)
   const [alertOpen, setAlertOpen] = useState(false)
   const [touring, setTouring] = useState(false)
@@ -45,24 +42,9 @@ export default function App() {
   const onDeliver = useCallback((chamber: number, nl: number) => {
     setReservoirs((rs) => rs.map((r, i) => (i === chamber ? { ...r, level: Math.max(0, r.level - nl / 1000) } : r)))
   }, [])
-  const sim = useSimulation(condition, autonomy, onDeliver)
+  const sim = useSimulation(condition, true, onDeliver)
 
-  const changeCondition = (c: Condition) => {
-    if (c === condition) return
-    setCondition(c)
-    sim.push('info', `Profile switched to ${CONDITIONS[c].name}.`)
-  }
-
-  const setAuto = (on: boolean) => {
-    setAutonomy(on)
-    sim.push(on ? 'ok' : 'warn', on ? 'Automatic care turned back on.' : 'Automatic care paused by patient.')
-    if (on && sim.awaitingManual) setTimeout(sim.resumeManual, 50)
-  }
-
-  const startTour = () => {
-    if (!autonomy) setAuto(true)
-    setTouring(true)
-  }
+  const startTour = () => setTouring(true)
   const endTour = useCallback(() => setTouring(false), [])
 
   return (
@@ -84,11 +66,10 @@ export default function App() {
           ))}
         </nav>
         <div className="mt-auto rounded-xl border border-line p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold">
-            <span className={`h-2.5 w-2.5 rounded-full ${autonomy ? 'bg-ok' : 'bg-warn'}`} />
-            {autonomy ? 'Automatic care on' : 'Automatic care paused'}
-          </div>
-          <div className="mt-1 text-xs text-mist">Care team: {CLINICIAN}</div>
+          <div className="label">Patient profile</div>
+          <div className="mt-1 font-semibold">{info.name}</div>
+          <div className="mt-0.5 text-xs text-mist">Implant targets: {info.target}</div>
+          <div className="mt-2 text-xs text-mist">Neurologist: {CLINICIAN}</div>
         </div>
       </aside>
 
@@ -99,22 +80,10 @@ export default function App() {
             <div className="lg:hidden">
               <Brand compact />
             </div>
-            <div
-              className="order-last grid w-full min-w-0 grid-cols-3 gap-1 rounded-xl border border-line bg-panel p-1 md:order-none md:flex md:w-auto"
-              role="radiogroup"
-              aria-label="Condition profile"
-            >
-              {(Object.keys(CONDITIONS) as Condition[]).map((c) => (
-                <button
-                  key={c}
-                  role="radio"
-                  aria-checked={condition === c}
-                  onClick={() => changeCondition(c)}
-                  className={`rounded-lg px-3 py-2 text-sm font-semibold transition sm:px-4 ${condition === c ? 'bg-teal text-ink' : 'text-haze hover:text-white'}`}
-                >
-                  {CONDITIONS[c].short}
-                </button>
-              ))}
+            <div className="hidden items-center gap-2 rounded-full border border-line bg-panel px-4 py-2 text-sm md:flex">
+              <span className="h-2 w-2 rounded-full bg-ok" />
+              <span className="font-semibold">{info.name}</span>
+              <span className="text-mist">· closed loop active</span>
             </div>
             <div className="ml-auto flex items-center gap-2">
               <button
@@ -135,10 +104,9 @@ export default function App() {
         </header>
 
         <main className={`mx-auto max-w-6xl px-4 pt-6 sm:px-6 ${touring ? 'pb-72 lg:pb-56' : 'pb-32 lg:pb-16'}`}>
-          {tab === 'home' && <CommandCenter condition={condition} sim={sim} autonomy={autonomy} setAuto={setAuto} reservoirs={reservoirs} />}
-          {tab === 'food' && <Nutrition key={condition} condition={condition} />}
-          {tab === 'move' && <Movement key={condition} condition={condition} />}
-          {tab === 'day' && <Daily key={condition} condition={condition} onAlert={() => setAlertOpen(true)} />}
+          {tab === 'home' && <CommandCenter condition={condition} sim={sim} reservoirs={reservoirs} />}
+          {tab === 'food' && <Nutrition condition={condition} />}
+          {tab === 'move' && <Movement condition={condition} />}
           <footer className="mt-12 text-center text-sm text-mist">
             NeuroPulse concept demo for HOSA Medical Innovation. All data is simulated. Not a medical device.
           </footer>
@@ -147,7 +115,7 @@ export default function App() {
 
       {/* Bottom nav (phone / tablet) */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-panel/95 backdrop-blur lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-line bg-panel/95 backdrop-blur lg:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label="Main"
       >
@@ -215,14 +183,6 @@ function IconMove() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-full w-full">
       <circle cx="13" cy="4" r="2" />
       <path d="M7 21l3-6 3 2v5M10 15l1-6 4 3 3 1M11 9 7 10l-2 3" />
-    </svg>
-  )
-}
-function IconCheck() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-full w-full">
-      <rect x="3" y="4" width="18" height="17" rx="3" />
-      <path d="M8 2v4M16 2v4M8 13l3 3 5-6" />
     </svg>
   )
 }
