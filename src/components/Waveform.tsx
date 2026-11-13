@@ -107,8 +107,8 @@ export default function Waveform({ condition, levelRef, phaseColor, showGrid }: 
 
       // fade on the left edge
       const g = ctx.createLinearGradient(0, 0, w * 0.12, 0)
-      g.addColorStop(0, 'rgba(11,21,28,1)')
-      g.addColorStop(1, 'rgba(11,21,28,0)')
+      g.addColorStop(0, 'rgba(16,27,35,1)')
+      g.addColorStop(1, 'rgba(16,27,35,0)')
       ctx.fillStyle = g
       ctx.fillRect(0, 0, w * 0.12, h)
 

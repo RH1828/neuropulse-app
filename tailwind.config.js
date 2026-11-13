@@ -4,10 +4,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#060c11',
-        panel: '#0b151c',
-        raised: '#102029',
-        line: '#1a2f39',
+        ink: '#0a1219',
+        panel: '#101b23',
+        raised: '#172631',
+        line: '#1f3540',
         mist: '#8aa3ad',
         haze: '#c9dbe0',
         teal: { DEFAULT: '#2ee6d0', dim: '#1a8c80' },

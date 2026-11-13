@@ -27,7 +27,7 @@ export default function Gauge({ label, value, max, unit, low, high, big }: Props
   return (
     <div className="flex flex-col items-center">
       <svg viewBox="0 0 180 104" className={big ? 'w-full max-w-[240px]' : 'w-full max-w-[200px]'} aria-hidden="true">
-        <path d={arc(0, 1)} stroke="#1a2f39" strokeWidth="12" fill="none" strokeLinecap="round" />
+        <path d={arc(0, 1)} stroke="#1f3540" strokeWidth="12" fill="none" strokeLinecap="round" />
         <path d={arc(low / max, high / max)} stroke="rgba(46,230,208,0.18)" strokeWidth="12" fill="none" />
         <path
           d={arc(0, 1)}
