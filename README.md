@@ -8,7 +8,7 @@ The demo follows one patient with Parkinson's disease.
 | --- | --- |
 | **Brain & Implant** | Live STN beta-wave monitor, "Simulate tremor spike" (Sense → Detect → Decide → Treat → Steady), and optional technical details. |
 | **Meals** | MIND diet with protein timing around levodopa, key nutrient (tyrosine), and a weekly grocery & prep list. |
-| **Exercise & Sleep** | Best time to exercise from NeuroPulse data, compact guided LSVT BIG-style exercises with a timer, and sleep linked to brain stability. |
+| **Exercise & Sleep** | Compact guided LSVT BIG-style exercises with a timer, and sleep linked to brain stability. |
 
 All data is simulated. Not a medical device.
 

@@ -10,24 +10,12 @@ export default function Movement({ condition }: { condition: Condition }) {
   const [doneEx, setDoneEx] = usePersist<Record<string, boolean>>(`np.ex.${condition}.${today}`, {})
   const [active, setActive] = useState<Exercise>(p.exercises[0])
   const done = p.exercises.filter((e) => doneEx[e.id]).length
-  const best = p.routines.find((r) => r.id === 'morning')!
 
   return (
     <div className="space-y-5">
       <div>
         <div className="label">Exercise & sleep</div>
-        <h1 className="mt-1 font-display text-[1.7rem] font-semibold">Therapy timed to your steadiest hours</h1>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-ok/30 bg-ok/5 p-5">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-ok/15 text-2xl" aria-hidden="true">
-          ⏱
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm text-mist">NeuroPulse recommends exercising</div>
-          <div className="font-display text-2xl font-semibold text-ok">{p.windows.physical}</div>
-          <div className="text-sm text-haze">{best.note}</div>
-        </div>
+        <h1 className="mt-1 font-display text-[1.7rem] font-semibold">Guided therapy & sleep</h1>
       </div>
 
       {/* Exercises + timer (compact) */}
