@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import AlertModal from './components/AlertModal'
 import { useSimulation } from './useSimulation'
-import { CONDITIONS, INITIAL_RESERVOIRS, type Condition } from './sim'
+import { CONDITIONS, type Condition } from './sim'
 import { CLINICIAN } from './data'
 import CommandCenter from './tabs/CommandCenter'
 import Nutrition from './tabs/Nutrition'
 import Movement from './tabs/Movement'
-import Tour, { TOUR_SECONDS, type Tab } from './Tour'
+
+type Tab = 'home' | 'food' | 'move'
 
 const TABS: { id: Tab; label: string; long: string; icon: ReactNode }[] = [
   { id: 'home', label: 'Brain', long: 'Brain & Implant', icon: <IconPulse /> },
@@ -23,9 +24,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(tabFromHash)
   const condition: Condition = 'pd' // this demo follows one Parkinson's patient
   const info = CONDITIONS[condition]
-  const [reservoirs, setReservoirs] = useState(INITIAL_RESERVOIRS)
   const [alertOpen, setAlertOpen] = useState(false)
-  const [touring, setTouring] = useState(false)
 
   useEffect(() => {
     const on = () => setTab(tabFromHash())
@@ -39,13 +38,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
-  const onDeliver = useCallback((chamber: number, nl: number) => {
-    setReservoirs((rs) => rs.map((r, i) => (i === chamber ? { ...r, level: Math.max(0, r.level - nl / 1000) } : r)))
-  }, [])
+  const onDeliver = useCallback(() => {}, [])
   const sim = useSimulation(condition, true, onDeliver)
 
-  const startTour = () => setTouring(true)
-  const endTour = useCallback(() => setTouring(false), [])
 
   return (
     <div className="min-h-screen lg:flex">
@@ -87,12 +82,6 @@ export default function App() {
             </div>
             <div className="ml-auto flex items-center gap-2">
               <button
-                onClick={touring ? endTour : startTour}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition ${touring ? 'border border-line text-haze' : 'border border-teal/60 text-teal hover:bg-teal/10'}`}
-              >
-                {touring ? 'Stop demo' : <>▶ <span className="hidden sm:inline">{TOUR_SECONDS / 60 === 1 ? '1-minute' : `${TOUR_SECONDS}s`} demo</span><span className="sm:hidden">Demo</span></>}
-              </button>
-              <button
                 onClick={() => setAlertOpen(true)}
                 className="flex items-center gap-2 rounded-xl bg-crit px-4 py-2.5 font-semibold text-white shadow-lg shadow-crit/20 hover:brightness-110"
               >
@@ -103,8 +92,8 @@ export default function App() {
           </div>
         </header>
 
-        <main className={`mx-auto max-w-6xl px-4 pt-6 sm:px-6 ${touring ? 'pb-72 lg:pb-56' : 'pb-32 lg:pb-16'}`}>
-          {tab === 'home' && <CommandCenter condition={condition} sim={sim} reservoirs={reservoirs} />}
+        <main className="mx-auto max-w-6xl px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
+          {tab === 'home' && <CommandCenter condition={condition} sim={sim} />}
           {tab === 'food' && <Nutrition condition={condition} />}
           {tab === 'move' && <Movement condition={condition} />}
           <footer className="mt-12 text-center text-sm text-mist">
@@ -131,8 +120,6 @@ export default function App() {
           </button>
         ))}
       </nav>
-
-      {touring && <Tour condition={condition} phase={sim.phase} onGo={go} onSpike={sim.triggerSpike} onExit={endTour} />}
 
       <AlertModal
         open={alertOpen}

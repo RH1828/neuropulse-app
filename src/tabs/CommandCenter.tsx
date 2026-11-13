@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import Waveform from '../components/Waveform'
-import { CONDITIONS, type Condition, type Phase, type Reservoir } from '../sim'
+import { CONDITIONS, type Condition, type Phase } from '../sim'
 import type { useSimulation } from '../useSimulation'
-import { Card, Pill, Ring } from '../ui'
-import { CLINICIAN } from '../data'
+import { Pill } from '../ui'
 
 type Sim = ReturnType<typeof useSimulation>
 
@@ -24,9 +23,7 @@ const STEPS: { id: Phase; label: string; plain: string }[] = [
   { id: 'stabilized', label: 'Steady', plain: 'Back to normal' },
 ]
 
-const DAILY_USE_UL = 18 // µL per day from the Parkinson's chamber
-
-export default function CommandCenter({ condition, sim, reservoirs }: { condition: Condition; sim: Sim; reservoirs: Reservoir[] }) {
+export default function CommandCenter({ condition, sim }: { condition: Condition; sim: Sim }) {
   const [details, setDetails] = useState(false)
   const info = CONDITIONS[condition]
   const { phase, chem, log, stats } = sim
@@ -49,10 +46,6 @@ export default function CommandCenter({ condition, sim, reservoirs }: { conditio
         ? info.intervention.patient
         : 'Beta waves (13–30 Hz) are spiking, a sign of tremor and stiffness. The AI is choosing a response.'
 
-  const res = reservoirs[info.intervention.chamber]
-  const pct = (res.level / res.capacity) * 100
-  const daysLeft = Math.floor((res.level - res.capacity * 0.1) / DAILY_USE_UL)
-  const refillDate = new Date(Date.now() + daysLeft * 86400000).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })
   const beta = 4.1 + chem.level * 15.8
 
   return (
@@ -145,37 +138,6 @@ export default function CommandCenter({ condition, sim, reservoirs }: { conditio
         </div>
       </section>
 
-      {/* Implant */}
-      <Card title="My implant">
-        <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-6 sm:grid-cols-3">
-          <div className="flex items-center gap-4">
-            <Ring pct={78} size={92} stroke={9} color="#43e08f">
-              <div className="font-display text-xl font-semibold">78%</div>
-            </Ring>
-            <div>
-              <div className="font-semibold">Battery</div>
-              <div className="text-sm text-mist">Charges wirelessly overnight</div>
-            </div>
-          </div>
-          <div>
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="font-semibold">Medicine reservoir</span>
-              <span className="text-haze tabular">{Math.round(pct)}%</span>
-            </div>
-            <div className="mt-2 h-3 overflow-hidden rounded-full bg-line">
-              <div className="h-full rounded-full bg-teal transition-all duration-700" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="mt-1.5 text-sm text-mist">{res.contents}</div>
-          </div>
-          <div className="rounded-xl bg-raised p-4">
-            <div className="font-display text-3xl font-semibold text-teal">{daysLeft} days</div>
-            <div className="text-sm text-haze">until refill visit</div>
-            <div className="text-xs text-mist">
-              {refillDate} · {CLINICIAN}
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   )
 }
