@@ -29,19 +29,19 @@ export const STEPS: Step[] = [
     tab: 'food',
     seconds: 12,
     title: 'Nutrition built for the brain',
-    text: (c) => `Every tab adapts to the condition. For ${CONDITIONS[c].short}: ${PROFILES[c].dietName.toLowerCase()}, a water tracker and a one-tap grocery list.`,
+    text: (c) => `Every tab adapts to the condition. For ${CONDITIONS[c].short}: ${PROFILES[c].dietName.toLowerCase()}, rich in ${PROFILES[c].keyNutrient}, with a one-tap grocery list.`,
   },
   {
     tab: 'move',
     seconds: 12,
     title: 'Exercise at the right time',
-    text: () => 'Routines are scheduled for the hours NeuroPulse sees the brain is steadiest, with guided timers and sleep tracking.',
+    text: (c) => `NeuroPulse finds the steadiest hours (${PROFILES[c].windows.physical}) for guided therapy exercises, and links sleep to brain stability.`,
   },
   {
     tab: 'day',
     seconds: 14,
     title: 'Brain data becomes a daily plan',
-    text: () => 'Best times for tasks, a 30-second daily check-in, and one button to alert the neurologist. That is NeuroPulse.',
+    text: () => 'Brain data becomes the best times for daily tasks, a quick check-in tracks quality of life, and one tap alerts the neurologist.',
   },
 ]
 export const TOUR_SECONDS = STEPS.reduce((s, x) => s + x.seconds, 0)

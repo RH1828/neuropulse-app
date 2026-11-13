@@ -1,67 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
 import { PROFILES, SAMPLE_SLEEP, type Exercise } from '../data'
-import type { Condition } from '../sim'
-import { Card, CheckRow, Glance, Pill, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
+import { CONDITIONS, type Condition } from '../sim'
+import { Card, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
 
 const today = new Date().toDateString()
 
 export default function Movement({ condition }: { condition: Condition }) {
   const p = PROFILES[condition]
-  const [checked, setChecked] = usePersist<Record<string, boolean>>(`np.routine.${condition}.${today}`, {})
   const [doneEx, setDoneEx] = usePersist<Record<string, boolean>>(`np.ex.${condition}.${today}`, {})
   const [active, setActive] = useState<Exercise>(p.exercises[0])
-  const hour = new Date().getHours()
-  const nowSlot = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
-  const routineTotal = p.routines.reduce((n, r) => n + r.items.length, 0)
-  const routineDone = p.routines.reduce((n, r) => n + r.items.filter((i) => checked[`${r.id}.${i.id}`]).length, 0)
+  const done = p.exercises.filter((e) => doneEx[e.id]).length
+  const best = p.routines.find((r) => r.id === 'morning')!
 
   return (
     <div className="space-y-5">
       <div>
-        <div className="label">Exercise & routines</div>
-        <h1 className="mt-1 font-display text-[1.7rem] font-semibold">Planned around your steadiest hours</h1>
+        <div className="label">Exercise & sleep · {CONDITIONS[condition].short}</div>
+        <h1 className="mt-1 font-display text-[1.7rem] font-semibold">Therapy timed to your steadiest hours</h1>
       </div>
 
-      <Glance
-        items={[
-          { label: 'Best for movement', value: p.windows.physical, color: '#43e08f' },
-          { label: 'Exercises done', value: `${p.exercises.filter((e) => doneEx[e.id]).length}/${p.exercises.length}` },
-          { label: 'Routine', value: `${routineDone}/${routineTotal}`, sub: 'steps checked off' },
-        ]}
-      />
-
-      {/* Routines */}
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 md:grid-cols-3">
-        {p.routines.map((r) => {
-          const n = r.items.filter((i) => checked[`${r.id}.${i.id}`]).length
-          return (
-            <section key={r.id} className={`card min-w-0 p-5 ${r.id === nowSlot ? 'border-teal/40' : ''}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-                    {r.label}
-                    {r.id === nowSlot && <Pill>Now</Pill>}
-                  </h2>
-                  <div className="mt-0.5 text-sm font-medium text-teal">{r.window}</div>
-                </div>
-                <Ring pct={(n / r.items.length) * 100} size={48} stroke={5}>
-                  <span className="text-xs font-semibold">{n}/{r.items.length}</span>
-                </Ring>
-              </div>
-              <p className="mt-2 text-sm text-mist">{r.note}</p>
-              <div className="mt-4 space-y-2">
-                {r.items.map((i) => {
-                  const k = `${r.id}.${i.id}`
-                  return (
-                    <CheckRow key={k} id={`r-${condition}-${k}`} checked={!!checked[k]} onChange={() => setChecked({ ...checked, [k]: !checked[k] })}>
-                      {i.text}
-                    </CheckRow>
-                  )
-                })}
-              </div>
-            </section>
-          )
-        })}
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-ok/30 bg-ok/5 p-5">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-ok/15 text-2xl" aria-hidden="true">
+          ⏱
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm text-mist">NeuroPulse recommends exercising</div>
+          <div className="font-display text-2xl font-semibold text-ok">{p.windows.physical}</div>
+          <div className="text-sm text-haze">{best.note}</div>
+        </div>
+        <Ring pct={(done / p.exercises.length) * 100} size={64} stroke={7} color="#43e08f">
+          <span className="text-sm font-semibold">{done}/{p.exercises.length}</span>
+        </Ring>
       </div>
 
       {/* Exercises + timer */}

@@ -14,7 +14,7 @@ const TABS: { id: Tab; label: string; long: string; icon: ReactNode }[] = [
   { id: 'home', label: 'Brain', long: 'Brain & Implant', icon: <IconPulse /> },
   { id: 'food', label: 'Meals', long: 'Meals & Nutrition', icon: <IconBowl /> },
   { id: 'move', label: 'Move', long: 'Exercise & Sleep', icon: <IconMove /> },
-  { id: 'day', label: 'My Day', long: 'Tasks & Journal', icon: <IconCheck /> },
+  { id: 'day', label: 'My Day', long: 'My Day', icon: <IconCheck /> },
 ]
 
 const tabFromHash = (): Tab => {

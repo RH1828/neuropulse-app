@@ -6,12 +6,12 @@ Patient companion app for **NeuroPulse**, a concept AI-powered closed-loop sub-c
 
 Pick a condition profile (Parkinson's, Epilepsy, Post-Stroke) at the top. It changes the brain signal, meals, exercises, routines and tasks across the whole app.
 
-| Tab | What it does |
+| Tab | Core features |
 | --- | --- |
-| **Brain & Implant** | Live brain-wave monitor, dopamine/GABA dials, "Simulate symptom spike" (Sense → Detect → Decide → Treat → Steady), manual override, battery, medicine reservoir and refill countdown. "Show technical details" reveals stimulation settings and the event log. |
-| **Meals & Nutrition** | Condition-specific daily meal plan with prep steps and tap-to-learn nutrients, water tracker, and a weekly grocery & prep checklist. |
-| **Exercise & Sleep** | Morning / afternoon / evening routines timed to stable windows, guided exercises with countdown timers, and a sleep log linked to overnight brain stability. |
-| **My Day** | Tasks grouped by Health & therapy, Daily living and Care team with progress rings and "best time" badges, a best-times-of-day chart, a daily check-in with a 7-day quality-of-life trend, and Alert neurologist. |
+| **Brain & Implant** | Live brain-wave monitor, dopamine/GABA dials, "Simulate symptom spike" (Sense → Detect → Decide → Treat → Steady), automatic-care status with manual override, battery, medicine reservoir and refill countdown. |
+| **Meals** | Condition-specific meal plan, key brain nutrient, and a weekly grocery & prep list. |
+| **Exercise & Sleep** | Best time to exercise from NeuroPulse data, guided therapy exercises with timers, and sleep linked to brain stability. |
+| **My Day** | AI best-times chart, a short task list with best-time badges, daily quality-of-life check-in with 7-day trend, and Alert neurologist. |
 
 All data is simulated. Not a medical device.
 

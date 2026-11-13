@@ -1,123 +1,49 @@
-import { useState } from 'react'
 import { PROFILES, WINDOW_LABEL, type Task, type TaskCat, type WindowKind } from '../data'
 import type { Condition } from '../sim'
-import { Card, CheckRow, Glance, Pill, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
+import { Card, CheckRow, Pill, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
 
-const CATS: { id: TaskCat; label: string; color: string }[] = [
-  { id: 'health', label: 'Health & therapy', color: '#2ee6d0' },
-  { id: 'living', label: 'Daily living', color: '#46c2ff' },
-  { id: 'care', label: 'Care team', color: '#c49bff' },
-]
+const CAT_LABEL: Record<TaskCat, string> = { health: 'Health', living: 'Daily living', care: 'Care team' }
 const WIN_COLOR: Record<WindowKind, string> = { physical: '#43e08f', focus: '#46c2ff', rest: '#c49bff' }
 const SAMPLE_QOL = [62, 58, 66, 70, 67, 74]
 
 export default function Daily({ condition, onAlert }: { condition: Condition; onAlert: () => void }) {
   const p = PROFILES[condition]
-  const [tasks, setTasks] = usePersist<Task[]>(`np.tasks.${condition}`, p.tasks)
-  const [draft, setDraft] = useState('')
-  const [draftCat, setDraftCat] = useState<TaskCat>('living')
+  // keep the list short: the tasks NeuroPulse can time, plus scheduled ones
+  const [tasks, setTasks] = usePersist<Task[]>(`np.tasks2.${condition}`, () => p.tasks.filter((t) => t.window || t.cat === 'care').slice(0, 6))
   const done = tasks.filter((t) => t.done).length
-  const nextCare = tasks.find((t) => t.cat === 'care' && !t.done)
-
   const toggle = (id: string) => setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)))
-  const add = () => {
-    if (!draft.trim()) return
-    setTasks([...tasks, { id: 'u' + Date.now(), text: draft.trim(), cat: draftCat }])
-    setDraft('')
-  }
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="label">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
-          <h1 className="mt-1 font-display text-[1.7rem] font-semibold">My day</h1>
-        </div>
+      <div>
+        <div className="label">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+        <h1 className="mt-1 font-display text-[1.7rem] font-semibold">My day, planned by brain data</h1>
       </div>
 
-      <Glance
-        items={[
-          { label: 'Tasks done', value: `${done}/${tasks.length}`, sub: `${Math.round((done / Math.max(1, tasks.length)) * 100)}% complete` },
-          { label: 'Best for focus', value: p.windows.focus, color: '#46c2ff' },
-          { label: 'Next visit', value: nextCare?.time?.split(',')[0] ?? '—', sub: nextCare?.text, color: '#c49bff' },
-        ]}
-      />
-
-      <BestTimes condition={condition} />
-
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-3">
-        {CATS.map((c) => {
-          const list = tasks.filter((t) => t.cat === c.id)
-          const n = list.filter((t) => t.done).length
-          return (
-            <section key={c.id} className="card min-w-0 p-5">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="font-display text-xl font-semibold">{c.label}</h2>
-                <Ring pct={list.length ? (n / list.length) * 100 : 0} size={46} stroke={5} color={c.color}>
-                  <span className="text-xs font-semibold">{n}/{list.length}</span>
-                </Ring>
-              </div>
-              <div className="space-y-2">
-                {list.map((t) => (
-                  <CheckRow
-                    key={t.id}
-                    id={`task-${condition}-${t.id}`}
-                    checked={!!t.done}
-                    onChange={() => toggle(t.id)}
-                  >
-                    <span className="block">{t.text}</span>
-                    {t.time && <span className="block text-sm text-mist">{t.time}</span>}
-                    {t.window && (
-                      <span className="mt-1.5 block">
-                        <Pill color={WIN_COLOR[t.window]}>✦ Best {p.windows[t.window]}</Pill>
-                      </span>
-                    )}
-                  </CheckRow>
-                ))}
-                {list.length === 0 && <p className="text-sm text-mist">Nothing here yet.</p>}
-              </div>
-            </section>
-          )
-        })}
-      </div>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          add()
-        }}
-        className="card flex flex-wrap items-center gap-3 p-4"
-      >
-        <label htmlFor="new-task" className="sr-only">New task</label>
-        <input
-          id="new-task"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder="Add a task…"
-          className="min-w-0 flex-1 rounded-xl border border-line bg-ink px-4 py-3 text-base placeholder:text-mist/70 focus:border-teal focus:outline-none"
-        />
-        <label htmlFor="new-task-cat" className="sr-only">Category</label>
-        <select
-          id="new-task-cat"
-          value={draftCat}
-          onChange={(e) => setDraftCat(e.target.value as TaskCat)}
-          className="rounded-xl border border-line bg-ink px-3 py-3 text-base"
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-2">
+        <BestTimes condition={condition} />
+        <Card
+          title="Today’s plan"
+          action={
+            <Ring pct={(done / Math.max(1, tasks.length)) * 100} size={48} stroke={5}>
+              <span className="text-xs font-semibold">{done}/{tasks.length}</span>
+            </Ring>
+          }
         >
-          {CATS.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-        <button type="submit" className="rounded-xl bg-teal px-5 py-3 font-semibold text-ink">
-          Add
-        </button>
-        {tasks.some((t) => t.done) && (
-          <button type="button" onClick={() => setTasks(tasks.map((t) => ({ ...t, done: false })))} className="px-2 text-sm text-mist hover:text-white">
-            Uncheck all
-          </button>
-        )}
-      </form>
+          <div className="space-y-2">
+            {tasks.map((t) => (
+              <CheckRow key={t.id} id={`task-${condition}-${t.id}`} checked={!!t.done} onChange={() => toggle(t.id)}>
+                <span className="block">{t.text}</span>
+                <span className="mt-1 flex flex-wrap items-center gap-2 text-sm text-mist">
+                  {CAT_LABEL[t.cat]}
+                  {t.time && <span>· {t.time}</span>}
+                  {t.window && <Pill color={WIN_COLOR[t.window]}>✦ Best {p.windows[t.window]}</Pill>}
+                </span>
+              </CheckRow>
+            ))}
+          </div>
+        </Card>
+      </div>
 
       <CheckIn condition={condition} onAlert={onAlert} />
     </div>
@@ -143,13 +69,13 @@ function BestTimes({ condition }: { condition: Condition }) {
         ))}
       </div>
       <div className="mt-5 overflow-x-auto">
-        <div className="flex h-32 min-w-[480px] items-end gap-1" role="img" aria-label="Predicted brain stability by hour, 6 AM to 10 PM">
+        <div className="flex min-w-[340px] items-end gap-1" role="img" aria-label="Predicted brain stability by hour, 6 AM to 10 PM">
           {hours.map(({ h, v }) => (
-            <div key={h} className="flex flex-1 flex-col items-center gap-1">
+            <div key={h} className="flex flex-1 flex-col items-center justify-end gap-1">
               <div
                 className="w-full rounded-t-md transition-all"
                 style={{
-                  height: `${v}%`,
+                  height: Math.round((v / 100) * 112),
                   background: v >= 85 ? '#2ee6d0' : v >= 70 ? '#2ee6d099' : '#2ee6d040',
                   outline: h === now ? '2px solid #e6f1f3' : undefined,
                   outlineOffset: 2,
