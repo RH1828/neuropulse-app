@@ -48,6 +48,7 @@ export interface Task {
 export interface Profile {
   dietName: string
   dietTip: string
+  keyNutrient: string
   meals: Meal[]
   prepPlan: string[]
   exercises: Exercise[]
@@ -77,7 +78,8 @@ export const PROFILES: Record<Condition, Profile> = {
   pd: {
     dietName: 'MIND diet + protein timing',
     dietTip:
-      'Take levodopa 30–60 minutes before meals. Keep breakfast and lunch lighter in protein and save most protein for dinner so it does not block your medicine.',
+      'Take levodopa 30–60 min before meals, and save most protein for dinner so it does not block the medicine.',
+    keyNutrient: 'Tyrosine',
     meals: [
       {
         id: 'pd-b',
@@ -191,7 +193,8 @@ export const PROFILES: Record<Condition, Profile> = {
   epilepsy: {
     dietName: 'Low-glycemic, modified Atkins style',
     dietTip:
-      'Eat at regular times and do not skip meals. Steady blood sugar helps keep brain activity steady. A strict ketogenic diet should only be done with a dietitian.',
+      'Eat at regular times and never skip meals. Steady blood sugar means steadier brain activity.',
+    keyNutrient: 'Magnesium',
     meals: [
       {
         id: 'ep-b',
@@ -303,7 +306,8 @@ export const PROFILES: Record<Condition, Profile> = {
   stroke: {
     dietName: 'Anti-inflammatory, low-sodium recovery plan',
     dietTip:
-      'Keep salt under 1,500 mg a day to protect blood pressure. If swallowing is hard, choose soft foods and follow your speech therapist’s texture advice.',
+      'Keep salt under 1,500 mg a day to protect blood pressure. Choose soft foods if swallowing is hard.',
+    keyNutrient: 'Omega-3',
     meals: [
       {
         id: 'st-b',

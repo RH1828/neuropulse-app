@@ -3,7 +3,7 @@ import Waveform from '../components/Waveform'
 import Gauge from '../components/Gauge'
 import { CONDITIONS, type Condition, type Phase, type Reservoir } from '../sim'
 import type { useSimulation } from '../useSimulation'
-import { Card, Pill, Ring } from '../ui'
+import { Card, Glance, Pill, Ring } from '../ui'
 import { CLINICIAN } from '../data'
 
 type Sim = ReturnType<typeof useSimulation>
@@ -70,7 +70,16 @@ export default function CommandCenter({
   const biomarker =
     condition === 'pd' ? 4.1 + chem.level * 15.8 : condition === 'epilepsy' ? 0.2 + chem.level * 2.8 : 0.18 + chem.level * 0.64
 
+  const stability = Math.round(95 - chem.level * 58)
   return (
+    <div className="space-y-5">
+      <Glance
+        items={[
+          { label: 'Brain stability', value: `${stability}%`, sub: stability >= 80 ? 'Steady' : 'Being treated', color: stability >= 80 ? '#2ee6d0' : '#f6b84a' },
+          { label: 'Auto-treated', value: stats.events, sub: 'times today' },
+          { label: 'Next refill', value: `${daysLeft} days`, sub: refillDate },
+        ]}
+      />
     <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-3">
       {/* Live signal */}
       <section className="card min-w-0 overflow-hidden lg:col-span-2" aria-live="polite">
@@ -168,7 +177,7 @@ export default function CommandCenter({
           <Gauge label="GABA" value={chem.gaba} max={350} unit="nM" low={160} high={280} />
         </div>
         <p className="mt-4 text-sm text-mist">
-          Dopamine helps smooth movement. GABA keeps brain activity calm. The shaded part of each dial is the healthy range.
+          Shaded = healthy range. Dopamine smooths movement; GABA keeps the brain calm.
         </p>
       </Card>
 
@@ -251,6 +260,7 @@ export default function CommandCenter({
           </div>
         </div>
       </Card>
+    </div>
     </div>
   )
 }

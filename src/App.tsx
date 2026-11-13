@@ -8,9 +8,7 @@ import CommandCenter from './tabs/CommandCenter'
 import Nutrition from './tabs/Nutrition'
 import Movement from './tabs/Movement'
 import Daily from './tabs/Daily'
-
-
-type Tab = 'home' | 'food' | 'move' | 'day'
+import Tour, { TOUR_SECONDS, type Tab } from './Tour'
 
 const TABS: { id: Tab; label: string; long: string; icon: ReactNode }[] = [
   { id: 'home', label: 'Brain', long: 'Brain & Implant', icon: <IconPulse /> },
@@ -30,6 +28,7 @@ export default function App() {
   const [autonomy, setAutonomy] = useState(true)
   const [reservoirs, setReservoirs] = useState(INITIAL_RESERVOIRS)
   const [alertOpen, setAlertOpen] = useState(false)
+  const [touring, setTouring] = useState(false)
 
   useEffect(() => {
     const on = () => setTab(tabFromHash())
@@ -37,11 +36,11 @@ export default function App() {
     return () => window.removeEventListener('hashchange', on)
   }, [])
 
-  const go = (t: Tab) => {
+  const go = useCallback((t: Tab) => {
     setTab(t)
     history.replaceState(null, '', '#' + t)
-    window.scrollTo({ top: 0 })
-  }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
 
   const onDeliver = useCallback((chamber: number, nl: number) => {
     setReservoirs((rs) => rs.map((r, i) => (i === chamber ? { ...r, level: Math.max(0, r.level - nl / 1000) } : r)))
@@ -59,6 +58,12 @@ export default function App() {
     sim.push(on ? 'ok' : 'warn', on ? 'Automatic care turned back on.' : 'Automatic care paused by patient.')
     if (on && sim.awaitingManual) setTimeout(sim.resumeManual, 50)
   }
+
+  const startTour = () => {
+    if (!autonomy) setAuto(true)
+    setTouring(true)
+  }
+  const endTour = useCallback(() => setTouring(false), [])
 
   return (
     <div className="min-h-screen lg:flex">
@@ -111,17 +116,25 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <button
-              onClick={() => setAlertOpen(true)}
-              className="ml-auto flex items-center gap-2 rounded-xl bg-crit px-4 py-2.5 font-semibold text-white shadow-lg shadow-crit/20 hover:brightness-110 md:ml-0"
-            >
-              <IconBell /> <span className="hidden sm:inline">Alert neurologist</span>
-              <span className="sm:hidden">Alert</span>
-            </button>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={touring ? endTour : startTour}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition ${touring ? 'border border-line text-haze' : 'border border-teal/60 text-teal hover:bg-teal/10'}`}
+              >
+                {touring ? 'Stop demo' : <>▶ <span className="hidden sm:inline">{TOUR_SECONDS / 60 === 1 ? '1-minute' : `${TOUR_SECONDS}s`} demo</span><span className="sm:hidden">Demo</span></>}
+              </button>
+              <button
+                onClick={() => setAlertOpen(true)}
+                className="flex items-center gap-2 rounded-xl bg-crit px-4 py-2.5 font-semibold text-white shadow-lg shadow-crit/20 hover:brightness-110"
+              >
+                <IconBell /> <span className="hidden sm:inline">Alert neurologist</span>
+                <span className="sm:hidden">Alert</span>
+              </button>
+            </div>
           </div>
         </header>
 
-        <main className="mx-auto max-w-6xl px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
+        <main className={`mx-auto max-w-6xl px-4 pt-6 sm:px-6 ${touring ? 'pb-72 lg:pb-56' : 'pb-32 lg:pb-16'}`}>
           {tab === 'home' && <CommandCenter condition={condition} sim={sim} autonomy={autonomy} setAuto={setAuto} reservoirs={reservoirs} />}
           {tab === 'food' && <Nutrition key={condition} condition={condition} />}
           {tab === 'move' && <Movement key={condition} condition={condition} />}
@@ -150,6 +163,8 @@ export default function App() {
           </button>
         ))}
       </nav>
+
+      {touring && <Tour condition={condition} phase={sim.phase} onGo={go} onSpike={sim.triggerSpike} onExit={endTour} />}
 
       <AlertModal
         open={alertOpen}

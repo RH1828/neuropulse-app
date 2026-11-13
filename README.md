@@ -2,6 +2,8 @@
 
 Patient companion app for **NeuroPulse**, a concept AI-powered closed-loop sub-clavicular neural implant (HOSA Medical Innovation demo).
 
+**▶ 1-minute demo** (top bar) runs a guided 60-second walkthrough: it switches tabs, triggers a symptom spike, and shows a script to read along. Space pauses, ←/→ skip, Esc exits.
+
 Pick a condition profile (Parkinson's, Epilepsy, Post-Stroke) at the top. It changes the brain signal, meals, exercises, routines and tasks across the whole app.
 
 | Tab | What it does |

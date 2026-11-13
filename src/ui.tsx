@@ -205,3 +205,20 @@ export function Drawer({ open, onClose, title, children }: { open: boolean; onCl
     </div>
   )
 }
+
+/** Three key numbers at the top of a tab, for a quick read while presenting. */
+export function Glance({ items }: { items: { label: string; value: ReactNode; sub?: string; color?: string }[] }) {
+  return (
+    <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-line bg-panel/90">
+      {items.map((it, i) => (
+        <div key={it.label} className={`min-w-0 px-3 py-4 sm:px-5 ${i ? 'border-l border-line' : ''}`}>
+          <div className="truncate text-xs font-medium uppercase tracking-[0.12em] text-mist">{it.label}</div>
+          <div className="mt-1 truncate font-display text-xl font-semibold sm:text-[1.65rem]" style={{ color: it.color ?? '#e6f1f3' }}>
+            {it.value}
+          </div>
+          {it.sub && <div className="truncate text-xs text-mist sm:text-sm">{it.sub}</div>}
+        </div>
+      ))}
+    </div>
+  )
+}

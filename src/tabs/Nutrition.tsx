@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { NUTRIENT_INFO, PROFILES, type Aisle, type Meal } from '../data'
 import type { Condition } from '../sim'
-import { Card, CheckRow, Drawer, Pill, Ring, usePersist } from '../ui'
+import { Card, CheckRow, Drawer, Glance, Pill, Ring, usePersist } from '../ui'
 
 const GOAL = 8
 const today = new Date().toDateString()
@@ -10,7 +10,7 @@ export default function Nutrition({ condition }: { condition: Condition }) {
   const p = PROFILES[condition]
   const [eaten, setEaten] = usePersist<Record<string, boolean>>(`np.eaten.${today}`, {})
   const [water, setWater] = usePersist<number>(`np.water.${today}`, 3)
-  const [open, setOpen] = useState<string | null>(p.meals[0].id)
+  const [open, setOpen] = useState<string | null>(null)
   const [drawer, setDrawer] = useState(false)
   const eatenCount = p.meals.filter((m) => eaten[m.id]).length
 
@@ -25,6 +25,14 @@ export default function Nutrition({ condition }: { condition: Condition }) {
           🛒 Make weekly grocery & prep list
         </button>
       </div>
+
+      <Glance
+        items={[
+          { label: 'Meals eaten', value: `${eatenCount}/${p.meals.length}` },
+          { label: 'Water', value: `${water}/${GOAL}`, sub: 'glasses', color: '#46c2ff' },
+          { label: 'Key nutrient', value: p.keyNutrient, color: '#2ee6d0' },
+        ]}
+      />
 
       <div className="flex gap-3 rounded-2xl border border-teal/25 bg-teal/5 p-4 sm:p-5">
         <span className="text-xl" aria-hidden="true">💡</span>
@@ -76,16 +84,11 @@ export default function Nutrition({ condition }: { condition: Condition }) {
             </div>
           </Card>
 
-          <Card title="Meals eaten">
-            <div className="flex items-center gap-4">
-              <Ring pct={(eatenCount / p.meals.length) * 100} size={84} stroke={9}>
-                <div className="font-display text-xl font-semibold">
-                  {eatenCount}
-                  <span className="text-sm text-mist">/{p.meals.length}</span>
-                </div>
-              </Ring>
-              <p className="text-sm text-haze">Eating on a regular schedule keeps your brain signals and medicine levels steady.</p>
-            </div>
+          <Card title={`Why ${p.keyNutrient}?`}>
+            <p className="text-haze">{NUTRIENT_INFO[p.keyNutrient]}</p>
+            <p className="mt-2 text-sm text-mist">
+              Found in: {p.meals.filter((m) => m.nutrients.includes(p.keyNutrient)).map((m) => m.name.toLowerCase()).join(', ')}.
+            </p>
           </Card>
         </div>
       </div>

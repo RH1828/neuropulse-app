@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { PROFILES, SAMPLE_SLEEP, type Exercise } from '../data'
 import type { Condition } from '../sim'
-import { Card, CheckRow, Pill, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
+import { Card, CheckRow, Glance, Pill, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
 
 const today = new Date().toDateString()
 
@@ -12,14 +12,23 @@ export default function Movement({ condition }: { condition: Condition }) {
   const [active, setActive] = useState<Exercise>(p.exercises[0])
   const hour = new Date().getHours()
   const nowSlot = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
+  const routineTotal = p.routines.reduce((n, r) => n + r.items.length, 0)
+  const routineDone = p.routines.reduce((n, r) => n + r.items.filter((i) => checked[`${r.id}.${i.id}`]).length, 0)
 
   return (
     <div className="space-y-5">
       <div>
         <div className="label">Exercise & routines</div>
         <h1 className="mt-1 font-display text-[1.7rem] font-semibold">Planned around your steadiest hours</h1>
-        <p className="mt-1 max-w-2xl text-haze">NeuroPulse tracks when your brain signals are most stable and schedules harder activities for those times.</p>
       </div>
+
+      <Glance
+        items={[
+          { label: 'Best for movement', value: p.windows.physical, color: '#43e08f' },
+          { label: 'Exercises done', value: `${p.exercises.filter((e) => doneEx[e.id]).length}/${p.exercises.length}` },
+          { label: 'Routine', value: `${routineDone}/${routineTotal}`, sub: 'steps checked off' },
+        ]}
+      />
 
       {/* Routines */}
       <div className="grid grid-cols-[minmax(0,1fr)] gap-5 md:grid-cols-3">

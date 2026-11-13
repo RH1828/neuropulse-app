@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { PROFILES, WINDOW_LABEL, type Task, type TaskCat, type WindowKind } from '../data'
 import type { Condition } from '../sim'
-import { Card, CheckRow, Pill, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
+import { Card, CheckRow, Glance, Pill, Ring, TrendLine, lastSevenLabels, usePersist } from '../ui'
 
 const CATS: { id: TaskCat; label: string; color: string }[] = [
   { id: 'health', label: 'Health & therapy', color: '#2ee6d0' },
@@ -17,6 +17,7 @@ export default function Daily({ condition, onAlert }: { condition: Condition; on
   const [draft, setDraft] = useState('')
   const [draftCat, setDraftCat] = useState<TaskCat>('living')
   const done = tasks.filter((t) => t.done).length
+  const nextCare = tasks.find((t) => t.cat === 'care' && !t.done)
 
   const toggle = (id: string) => setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)))
   const add = () => {
@@ -32,17 +33,15 @@ export default function Daily({ condition, onAlert }: { condition: Condition; on
           <div className="label">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
           <h1 className="mt-1 font-display text-[1.7rem] font-semibold">My day</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <Ring pct={(done / Math.max(1, tasks.length)) * 100} size={64} stroke={7}>
-            <span className="text-sm font-semibold">{Math.round((done / Math.max(1, tasks.length)) * 100)}%</span>
-          </Ring>
-          <div className="text-sm text-haze">
-            {done} of {tasks.length}
-            <br />
-            tasks done
-          </div>
-        </div>
       </div>
+
+      <Glance
+        items={[
+          { label: 'Tasks done', value: `${done}/${tasks.length}`, sub: `${Math.round((done / Math.max(1, tasks.length)) * 100)}% complete` },
+          { label: 'Best for focus', value: p.windows.focus, color: '#46c2ff' },
+          { label: 'Next visit', value: nextCare?.time?.split(',')[0] ?? '—', sub: nextCare?.text, color: '#c49bff' },
+        ]}
+      />
 
       <BestTimes condition={condition} />
 
